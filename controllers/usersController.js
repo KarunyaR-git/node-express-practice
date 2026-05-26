@@ -11,7 +11,6 @@ function getUsers(req, res) {
 
 function getUserById(req, res) {
     const id = Number(req.params.id);
-    console.log(id);
     if(!isNaN(id)) {
         const user = users.find((user)=> user.id === id);
         if(user) {
@@ -26,7 +25,6 @@ function getUserById(req, res) {
 
 function createUser(req, res) {
     const { id , name} = req.body;
-    console.log(typeof(id))
     if(id === undefined || id === null || !name) {
         res.status(400).send('Id and name are required');
     } else {
@@ -73,7 +71,6 @@ function deleteUser(req, res) {
             res.status(404).send('User not found');
         } else {
             users.splice(isIdPresent, 1);
-            console.log(users);
             res.status(204).end();
             //res.sendStatus(204); // Both will work just for reference adding here.
         }   
