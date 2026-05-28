@@ -2,6 +2,8 @@ const express = require('express');
 
 const app = express();
 
+const mongoose = require('mongoose');
+
 const usersRouter = require('./routes/users');
 
 const authRouter = require('./routes/auth');
@@ -50,6 +52,16 @@ app.use((req, res) => {
     res.status(404).send('Karunya 😈 Page Not Found 😭');
 });
 
-app.listen(3000, () => {
-    console.log('Express server running on port 3000 😈');
+mongoose.connect('mongodb://localhost:27017/familycare')
+.then(() => {
+
+    console.log('MongoDB Connected 😈');
+
+    app.listen(3000, () => {
+        console.log('Express server running on port 3000 😏');
+    });
+
+})
+.catch((error) => {
+    console.log(error);
 });
