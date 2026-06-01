@@ -1,18 +1,20 @@
 
-const users = [
-    { id: 1, name: 'Karunya' },
-    { id: 2, name: 'Gopi' },
-    { id: 3, name: 'Priya' }
-];
+const mongoose = require('mongoose');
+const User = require('../models/User');
 
-function getUsers(req, res) {
+async function getUsers(req, res) {
+
+    const users = await User.find();
+
     res.status(200).json(users);
+
 }
 
-function getUserById(req, res) {
-    const id = Number(req.params.id);
-    if(!isNaN(id)) {
-        const user = users.find((user)=> user.id === id);
+async function getUserById(req, res) {
+    const id = req.params.id;
+    if(mongoose.Types.ObjectId.isValid(id)) {
+        //const user = users.find((user)=> user.id === id);
+        const user = await User.findById(id);
         if(user) {
             res.status(200).json(user);
         } else {
@@ -23,57 +25,57 @@ function getUserById(req, res) {
     }    
 }
 
-function createUser(req, res) {
-    const { id , name} = req.body;
-    if(id === undefined || id === null || !name) {
-        res.status(400).send('Id and name are required');
+async function createUser(req, res) {
+    const { name, age, role} = req.body;
+    
+    if(age === undefined || age === null || !name || !role) {
+        res.status(400).send('name, age and role are required');
     } else {
-        if(!isNaN(Number(id))) {
-            const isIdPresent = users.findIndex((user)=> user.id === Number(id));
-            if(isIdPresent < 0) {
-               users.push({id: Number(id), name});
-               res.status(201).send('Success'); 
-            } else {
-                 res.status(400).send('Id already present');
+        try {
+            const user = new User(req.body);
+            await user.save();
+
+            res.status(201).json(user);
+        } catch (error) {
+            if (error.name === 'ValidationError' || error.name === 'CastError') {
+                return res.status(400).send('Invalid user data');
             }
-            
-        } else {
-            res.status(400).send('Invalid id format');
+
+            return res.status(500).send('Something went wrong');
         }
     }
 }
 
-function updateUser(req, res) {
-    const id = Number(req.params.id);
-    const { name } = req.body || {};
-    if(!isNaN(id)) {
-        if(!name) {
-            res.status(400).send('Name required');
+async function updateUser(req, res) {
+    const id = req.params.id;
+    const { name, age, role } = req.body || {};
+    if(mongoose.Types.ObjectId.isValid(id)) {
+        if(!name && (age === undefined || age === null) && !role ) {
+            res.status(400).send('Name or age or role is required');
         } else {
-            const isIdPresent = users.findIndex((user)=> user.id === id);
-            if(isIdPresent < 0) {
-               res.status(404).send('User not found');
-            } else {
-                users[isIdPresent].name = name;
-                res.status(200).send('Success');
+            const updatedUser = await User.findByIdAndUpdate(id, req.body);
+            console.log(updatedUser);
+            if (!updatedUser) {
+                return res.status(404).send('User not found');
             }
+            return res.status(200).send('Success');
         }        
     } else {
         res.status(400).send('Invalid id format');
     }
 }
 
-function deleteUser(req, res) {
-    const id = Number(req.params.id);
-    if(!isNaN(id)) {
-        const isIdPresent = users.findIndex((user)=> user.id === id);
-        if(isIdPresent < 0) {
-            res.status(404).send('User not found');
-        } else {
-            users.splice(isIdPresent, 1);
-            res.status(204).end();
-            //res.sendStatus(204); // Both will work just for reference adding here.
-        }   
+async function deleteUser(req, res) {
+    const id = req.params.id;
+    if(mongoose.Types.ObjectId.isValid(id)) {
+        const deleteUser = await User.findByIdAndDelete(id);
+        console.log(deleteUser);
+        if(!deleteUser) {            
+            return res.status(404).send('User not found');
+        } 
+        return res.status(204).end();
+        //res.sendStatus(204); // Both will work just for reference adding here.
+           
     } else {
         res.status(400).send('Invalid id format');
     }
