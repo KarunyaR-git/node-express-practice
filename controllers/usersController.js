@@ -25,24 +25,18 @@ async function getUserById(req, res) {
     }    
 }
 
-async function createUser(req, res) {
-    const { name, age, role} = req.body;
-    
+async function createUser(req, res, next) {
     try {
             const user = new User(req.body);
             await user.save();
 
             res.status(201).json(user);
         } catch (error) {
-            if (error.name === 'ValidationError' || error.name === 'CastError') {
-                return res.status(400).send('Invalid user data');
-            }
-
-            return res.status(500).send('Something went wrong');
+            next(error);
         }
 }
 
-async function updateUser(req, res) {
+async function updateUser(req, res, next) {
     const id = req.params.id;
     const { name, age, role } = req.body || {};
     if(mongoose.Types.ObjectId.isValid(id)) {
@@ -59,13 +53,10 @@ async function updateUser(req, res) {
                 }
                 return res.status(200).send('Success');
             } catch(error) {
-                if (error.name === 'ValidationError' || error.name === 'CastError') {
-                    return res.status(400).send('Invalid user data');
-                }
-                return res.status(500).send('Something went wrong');
+                next(error);
             }   
     } else {
-        res.status(400).send('Invalid id format');
+        return res.status(400).send('Invalid id format');
     }
 }
 

@@ -12,6 +12,8 @@ const auth = require('./middleware/auth');
 
 const logger = require('./middleware/logger');
 
+const errorHandler = require('./middleware/errorHandler');
+
 app.use(express.json());
 
 app.use(logger);
@@ -51,6 +53,8 @@ app.use('/users', auth, usersRouter);
 app.use((req, res) => {
     res.status(404).send('Karunya 😈 Page Not Found 😭');
 });
+
+app.use(errorHandler);
 
 mongoose.connect('mongodb://localhost:27017/familycare')
 .then(() => {
