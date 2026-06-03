@@ -28,10 +28,7 @@ async function getUserById(req, res) {
 async function createUser(req, res) {
     const { name, age, role} = req.body;
     
-    if(age === undefined || age === null || !name || !role) {
-        res.status(400).send('name, age and role are required');
-    } else {
-        try {
+    try {
             const user = new User(req.body);
             await user.save();
 
@@ -43,7 +40,6 @@ async function createUser(req, res) {
 
             return res.status(500).send('Something went wrong');
         }
-    }
 }
 
 async function updateUser(req, res) {
@@ -51,15 +47,23 @@ async function updateUser(req, res) {
     const { name, age, role } = req.body || {};
     if(mongoose.Types.ObjectId.isValid(id)) {
         if(!name && (age === undefined || age === null) && !role ) {
-            res.status(400).send('Name or age or role is required');
-        } else {
-            const updatedUser = await User.findByIdAndUpdate(id, req.body);
-            console.log(updatedUser);
-            if (!updatedUser) {
-                return res.status(404).send('User not found');
-            }
-            return res.status(200).send('Success');
-        }        
+            return res.status(400).send('Name or age or role is required');
+        } 
+        try {
+                const updatedUser = await User.findByIdAndUpdate(id, req.body, {
+                new: true,
+                runValidators: true
+                });
+                if (!updatedUser) {
+                    return res.status(404).send('User not found');
+                }
+                return res.status(200).send('Success');
+            } catch(error) {
+                if (error.name === 'ValidationError' || error.name === 'CastError') {
+                    return res.status(400).send('Invalid user data');
+                }
+                return res.status(500).send('Something went wrong');
+            }   
     } else {
         res.status(400).send('Invalid id format');
     }
