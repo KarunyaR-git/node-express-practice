@@ -45,7 +45,7 @@ app.get('/search', (req, res) => {
 
 });
 
-app.use('/login', authRouter);
+app.use('/auth', authRouter);
 
 app.use('/users', auth, usersRouter);
 
