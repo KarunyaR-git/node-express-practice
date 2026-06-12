@@ -1,16 +1,18 @@
 const express = require('express');
 const router = express.Router();
 
+const allowRoles = require('../middleware/allowRoles');
+
 const { getUsers,  getUserById, createUser, updateUser, deleteUser} = require('../controllers/usersController');
 
-router.get('/', getUsers);
+router.get('/', allowRoles(['admin']), getUsers);
 
-router.get('/:id', getUserById);
+router.get('/:id',allowRoles(['user', 'admin']), getUserById);
 
-router.post('/', createUser);
+router.post('/', allowRoles(['user']), createUser);
 
-router.put('/:id', updateUser);
+router.put('/:id', allowRoles(['user', 'admin']), updateUser);
 
-router.delete('/:id', deleteUser);
+router.delete('/:id', allowRoles(['admin']), deleteUser);
 
 module.exports = router;
