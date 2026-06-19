@@ -5,7 +5,7 @@ function auth(req, res, next) {
     const error = new Error('Unauthorized');
     error.statusCode = 401;
     if(authHeader){
-        if(authHeader.startsWith('Bearer')){
+        if(authHeader.startsWith('Bearer ')){
             const token = authHeader.split(' ')[1];
             try {
                 const verifiedUser = jwt.verify(token, secretKey);
